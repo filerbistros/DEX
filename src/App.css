@@ -1,0 +1,9 @@
+/* App global utility classes */
+.trade-flow-arrow {
+  position: relative;
+}
+.trade-flow-arrow::after {
+  content: '➔';
+  color: #00f59b;
+  margin: 0 4px;
+}

@@ -1,0 +1,250 @@
+import type { Token, ChainId } from '../types/arbitrage';
+
+export const TOKENS: Record<string, Token> = {
+  // Ethereum
+  'ETH-ethereum': {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    chainId: 'ethereum',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+    priceUsd: 3150.00,
+  },
+  'USDT-ethereum': {
+    symbol: 'USDT',
+    name: 'Tether USD',
+    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    chainId: 'ethereum',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+    priceUsd: 1.0002,
+    isStable: true,
+  },
+  'USDC-ethereum': {
+    symbol: 'USDC',
+    name: 'USD Coin',
+    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    chainId: 'ethereum',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    priceUsd: 0.9998,
+    isStable: true,
+  },
+  'WBTC-ethereum': {
+    symbol: 'WBTC',
+    name: 'Wrapped BTC',
+    address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+    chainId: 'ethereum',
+    decimals: 8,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png',
+    priceUsd: 64200.00,
+  },
+  'PEPE-ethereum': {
+    symbol: 'PEPE',
+    name: 'Pepe',
+    address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933',
+    chainId: 'ethereum',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6982508145454Ce325dDbE47a25d4ec3d2311933/logo.png',
+    priceUsd: 0.0000098,
+  },
+
+  // Arbitrum
+  'ETH-arbitrum': {
+    symbol: 'ETH',
+    name: 'Ethereum (Arbitrum)',
+    address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    chainId: 'arbitrum',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+    priceUsd: 3148.50,
+  },
+  'ARB-arbitrum': {
+    symbol: 'ARB',
+    name: 'Arbitrum',
+    address: '0x912CE59144191C1204E64559FE8253a0e49E6548',
+    chainId: 'arbitrum',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png',
+    priceUsd: 0.854,
+  },
+  'USDC-arbitrum': {
+    symbol: 'USDC',
+    name: 'USD Coin (Arbitrum)',
+    address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+    chainId: 'arbitrum',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    priceUsd: 1.0000,
+    isStable: true,
+  },
+  'USDT-arbitrum': {
+    symbol: 'USDT',
+    name: 'Tether USD (Arbitrum)',
+    address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+    chainId: 'arbitrum',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+    priceUsd: 1.0003,
+    isStable: true,
+  },
+
+  // Base
+  'ETH-base': {
+    symbol: 'ETH',
+    name: 'Ethereum (Base)',
+    address: '0x4200000000000000000000000000000000000006',
+    chainId: 'base',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+    priceUsd: 3151.20,
+  },
+  'AERO-base': {
+    symbol: 'AERO',
+    name: 'Aerodrome',
+    address: '0x940181a94A35A4569E4529A3CDfB74e38FD98631',
+    chainId: 'base',
+    decimals: 18,
+    logo: 'https://aerodrome.finance/favicon.svg',
+    priceUsd: 1.18,
+  },
+  'USDC-base': {
+    symbol: 'USDC',
+    name: 'USD Coin (Base)',
+    address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    chainId: 'base',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    priceUsd: 0.9999,
+    isStable: true,
+  },
+
+  // BSC
+  'BNB-bsc': {
+    symbol: 'BNB',
+    name: 'BNB',
+    address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    chainId: 'bsc',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/info/logo.png',
+    priceUsd: 585.40,
+  },
+  'USDT-bsc': {
+    symbol: 'USDT',
+    name: 'Tether USD (BSC)',
+    address: '0x55d398326f99059fF775485246999027B3197955',
+    chainId: 'bsc',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+    priceUsd: 1.0001,
+    isStable: true,
+  },
+  'CAKE-bsc': {
+    symbol: 'CAKE',
+    name: 'PancakeSwap',
+    address: '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
+    chainId: 'bsc',
+    decimals: 18,
+    logo: 'https://tokens.pancakeswap.finance/images/symbol/cake.png',
+    priceUsd: 2.45,
+  },
+
+  // Solana
+  'SOL-solana': {
+    symbol: 'SOL',
+    name: 'Solana',
+    address: 'So11111111111111111111111111111111111111112',
+    chainId: 'solana',
+    decimals: 9,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',
+    priceUsd: 148.80,
+  },
+  'USDC-solana': {
+    symbol: 'USDC',
+    name: 'USD Coin (Solana)',
+    address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    chainId: 'solana',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    priceUsd: 1.0000,
+    isStable: true,
+  },
+  'RAY-solana': {
+    symbol: 'RAY',
+    name: 'Raydium',
+    address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
+    chainId: 'solana',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/raydium-io/media-assets/master/logo.png',
+    priceUsd: 2.85,
+  },
+  'WIF-solana': {
+    symbol: 'WIF',
+    name: 'dogwifhat',
+    address: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
+    chainId: 'solana',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm/logo.png',
+    priceUsd: 1.95,
+  },
+
+  // Polygon
+  'POL-polygon': {
+    symbol: 'POL',
+    name: 'Polygon',
+    address: '0x0000000000000000000000000000000000001010',
+    chainId: 'polygon',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png',
+    priceUsd: 0.42,
+  },
+  'USDT-polygon': {
+    symbol: 'USDT',
+    name: 'Tether USD (Polygon)',
+    address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+    chainId: 'polygon',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+    priceUsd: 1.0001,
+    isStable: true,
+  },
+
+  // Avalanche
+  'AVAX-avalanche': {
+    symbol: 'AVAX',
+    name: 'Avalanche',
+    address: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
+    chainId: 'avalanche',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png',
+    priceUsd: 26.75,
+  },
+  'USDC-avalanche': {
+    symbol: 'USDC',
+    name: 'USD Coin (Avalanche)',
+    address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+    chainId: 'avalanche',
+    decimals: 6,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    priceUsd: 1.0000,
+    isStable: true,
+  },
+
+  // Optimism
+  'OP-optimism': {
+    symbol: 'OP',
+    name: 'Optimism',
+    address: '0x4200000000000000000000000000000000000042',
+    chainId: 'optimism',
+    decimals: 18,
+    logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/optimism/info/logo.png',
+    priceUsd: 1.45,
+  },
+};
+
+export const TOKEN_LIST = Object.values(TOKENS);
+
+export function getTokensByChain(chainId: ChainId): Token[] {
+  return TOKEN_LIST.filter(t => t.chainId === chainId);
+}
