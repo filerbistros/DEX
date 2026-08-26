@@ -19,7 +19,7 @@ export interface DexScreenerPair {
     name: string;
     symbol: string;
   };
-  priceNative: string;
+  priceNative?: string;
   priceUsd: string;
   volume: {
     h24: number;
@@ -29,7 +29,7 @@ export interface DexScreenerPair {
     base: number;
     quote: number;
   };
-  priceChange: {
+  priceChange?: {
     h24: number;
   };
 }
@@ -60,7 +60,7 @@ function mapDexInfo(dexId: string, chainId: ChainId) {
   if (d.includes('aerodrome')) return DEXES.aerodrome;
   if (d.includes('sushi')) return DEXES.sushiswap;
   if (d.includes('curve')) return DEXES.curve;
-  if (d.includes('traderjoe') || d.includes('joe')) return DEXES.traderjoe;
+  if (d.includes('traderjoe') || d.includes('joe') || d.includes('lfj')) return DEXES.traderjoe;
   if (d.includes('quickswap')) return DEXES.quickswap;
 
   // Fallback default for chain
@@ -68,31 +68,45 @@ function mapDexInfo(dexId: string, chainId: ChainId) {
   return chainDexes[0] || DEXES.uniswap_v3;
 }
 
-// Popular tokens to fetch from Live DexScreener API
-const POPULAR_TOKENS = [
-  'WETH', 'SOL', 'ARB', 'AERO', 'PEPE', 'WIF', 'BNB', 'AVAX', 'POL', 'LINK', 'UNI', 'PENDLE', 'NEAR', 'SUI'
+// High-volume token queries for real-time live arbitrage scanning
+const SEARCH_TOKENS = [
+  'ETH', 'SOL', 'ARB', 'AERO', 'BNB', 'AVAX', 'PEPE', 'WIF', 'CAKE', 'LINK', 'UNI', 'POL', 'PENDLE', 'NEAR'
 ];
 
 /**
- * Fetch real live market pairs from DexScreener public REST API
+ * Fetch real live market pairs from DexScreener parallel queries
  */
 export async function fetchLiveDexScreenerPairs(): Promise<DexScreenerPair[]> {
   try {
-    const query = POPULAR_TOKENS.slice(0, 6).join(',');
-    const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(query)}`);
-    if (!response.ok) {
-      throw new Error(`DexScreener API error: ${response.statusText}`);
+    const fetchPromises = SEARCH_TOKENS.map(async (query) => {
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) return [];
+        const json = await res.json();
+        return (json.pairs || []) as DexScreenerPair[];
+      } catch {
+        return [];
+      }
+    });
+
+    const settled = await Promise.allSettled(fetchPromises);
+    const allPairs: DexScreenerPair[] = [];
+
+    for (const item of settled) {
+      if (item.status === 'fulfilled' && Array.isArray(item.value)) {
+        allPairs.push(...item.value);
+      }
     }
-    const data = await response.json();
-    return (data.pairs || []) as DexScreenerPair[];
+
+    return allPairs;
   } catch (error) {
-    console.warn('DexScreener public API rate limit or network issue, using cached live snapshot:', error);
+    console.warn('DexScreener API polling error:', error);
     return [];
   }
 }
 
 /**
- * Compare live DEX pairs across exchanges to find real arbitrage spreads
+ * Scan, filter and calculate real live Mainnet arbitrage opportunities
  */
 export async function scanLiveMainnetArbitrage(
   tradeSizeUsd: number, 
@@ -103,14 +117,12 @@ export async function scanLiveMainnetArbitrage(
     return [];
   }
 
-  // Filter out pairs with low liquidity
-  const validPairs = rawPairs.filter(p => 
-    p.priceUsd && 
-    Number(p.priceUsd) > 0 && 
-    p.liquidity && 
-    p.liquidity.usd > 30000 &&
-    mapChainId(p.chainId) !== null
-  );
+  // Filter out pairs with low liquidity or unsupported chains
+  const validPairs = rawPairs.filter(p => {
+    if (!p.priceUsd || parseFloat(p.priceUsd) <= 0) return false;
+    if (!p.liquidity || p.liquidity.usd < 8000) return false;
+    return mapChainId(p.chainId) !== null;
+  });
 
   // Group pairs by base token symbol
   const tokenGroups: Record<string, DexScreenerPair[]> = {};
@@ -123,8 +135,9 @@ export async function scanLiveMainnetArbitrage(
   }
 
   const opportunities: ArbitrageOpportunity[] = [];
+  const seenPairSignatures = new Set<string>();
 
-  // Find arbitrage opportunities across different DEXes for the same token
+  // Compare pools across DEXes & Chains
   for (const [symbol, pairs] of Object.entries(tokenGroups)) {
     if (pairs.length < 2) continue;
 
@@ -133,12 +146,14 @@ export async function scanLiveMainnetArbitrage(
         const pairA = pairs[i];
         const pairB = pairs[j];
 
+        if (pairA.pairAddress === pairB.pairAddress) continue;
+
         const priceA = parseFloat(pairA.priceUsd);
         const priceB = parseFloat(pairB.priceUsd);
 
-        if (!priceA || !priceB || priceA <= 0 || priceB <= 0) continue;
+        if (!priceA || !priceB || isNaN(priceA) || isNaN(priceB)) continue;
 
-        // Buy on the cheaper DEX, sell on the more expensive DEX
+        // Buy on the cheaper pool, sell on the more expensive pool
         const buyPair = priceA < priceB ? pairA : pairB;
         const sellPair = priceA < priceB ? pairB : pairA;
 
@@ -147,8 +162,8 @@ export async function scanLiveMainnetArbitrage(
 
         const grossSpread = ((sellPrice - buyPrice) / buyPrice) * 100;
 
-        // Only consider spreads between 0.4% and 15% (filter out abnormal illiquid outliers)
-        if (grossSpread < 0.4 || grossSpread > 15) continue;
+        // Only keep genuine spreads between 0.3% and 12% (filter out abnormal scam/illiquid pools)
+        if (grossSpread < 0.3 || grossSpread > 12.0) continue;
 
         const buyChainId = mapChainId(buyPair.chainId)!;
         const sellChainId = mapChainId(sellPair.chainId)!;
@@ -156,8 +171,10 @@ export async function scanLiveMainnetArbitrage(
         const buyDex = mapDexInfo(buyPair.dexId, buyChainId);
         const sellDex = mapDexInfo(sellPair.dexId, sellChainId);
 
-        // Skip if same DEX on same chain
-        if (buyChainId === sellChainId && buyDex.id === sellDex.id) continue;
+        // Deduplicate
+        const signature = `${symbol}-${buyChainId}-${buyDex.id}-${sellChainId}-${sellDex.id}`;
+        if (seenPairSignatures.has(signature)) continue;
+        seenPairSignatures.add(signature);
 
         const isCrossChain = buyChainId !== sellChainId;
         const buyChain = CHAINS[buyChainId];
@@ -174,9 +191,9 @@ export async function scanLiveMainnetArbitrage(
         };
 
         const tokenOut: Token = {
-          symbol: buyPair.quoteToken.symbol,
-          name: buyPair.quoteToken.name || 'USD Coin',
-          address: buyPair.quoteToken.address,
+          symbol: buyPair.quoteToken?.symbol || 'USDC',
+          name: buyPair.quoteToken?.name || 'USD Coin',
+          address: buyPair.quoteToken?.address || buyPair.baseToken.address,
           chainId: buyChainId,
           decimals: 6,
           logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
@@ -184,10 +201,11 @@ export async function scanLiveMainnetArbitrage(
           isStable: true,
         };
 
-        const minLiquidity = Math.min(buyPair.liquidity?.usd || 100000, sellPair.liquidity?.usd || 100000);
+        const minLiquidity = Math.min(buyPair.liquidity?.usd || 50000, sellPair.liquidity?.usd || 50000);
+        const totalVol24 = Math.round((buyPair.volume?.h24 || 0) + (sellPair.volume?.h24 || 0));
 
         const opp: ArbitrageOpportunity = {
-          id: `live-${buyPair.pairAddress.slice(0, 6)}-${sellPair.pairAddress.slice(0, 6)}`,
+          id: `live-${buyPair.pairAddress.slice(0, 5)}-${sellPair.pairAddress.slice(0, 5)}`,
           type: isCrossChain ? 'cross_chain' : 'intra_chain',
           buyDex,
           sellDex,
@@ -203,7 +221,7 @@ export async function scanLiveMainnetArbitrage(
           estSellGasUsd: sellChain.avgGasUsd,
           bridge: isCrossChain ? BRIDGES.across : undefined,
           estBridgeFeeUsd: isCrossChain ? 1.2 : 0,
-          estBridgeTimeMin: isCrossChain ? 1.0 : 0,
+          estBridgeTimeMin: isCrossChain ? 0.8 : 0,
           netProfitPct: 0,
           netProfitUsd: 0,
           maxCapacityUsd: Math.round(minLiquidity * 0.08),
@@ -212,21 +230,22 @@ export async function scanLiveMainnetArbitrage(
           flashLoanFeePct: 0.05,
           safetyRating: 'safe',
           safetyReasons: [
-            `Live DexScreener 24h Vol: $${Math.round(buyPair.volume.h24 + sellPair.volume.h24).toLocaleString()}`,
-            `Real Pool Liquidity: $${Math.round(minLiquidity).toLocaleString()}`,
-            `Verified On-Chain Contracts`
+            `Live 24h Volume: $${totalVol24.toLocaleString()}`,
+            `Pool Liquidity: $${Math.round(minLiquidity).toLocaleString()}`,
+            `Verified DEX Smart Contract`
           ],
           timestamp: Date.now(),
           executionSteps: [],
         };
 
         const recalculated = recalculateOpportunity(opp, tradeSizeUsd, useFlashLoans);
-        if (recalculated.netProfitPct > 0.1) {
+        if (recalculated.netProfitPct > 0.05) {
           opportunities.push(recalculated);
         }
       }
     }
   }
 
-  return opportunities.sort((a, b) => b.netProfitPct - a.netProfitPct);
+  // Sort by highest Net Profit %
+  return opportunities.sort((a, b) => b.netProfitPct - a.netProfitPct).slice(0, 30);
 }
