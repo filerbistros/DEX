@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calculator, TrendingUp, Calendar } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface TradeSimulatorProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
   const [tradesPerDay, setTradesPerDay] = useState<number>(4);
   const [expectedRoiPct, setExpectedRoiPct] = useState<number>(avgNetProfitPct > 0 ? Number(avgNetProfitPct.toFixed(2)) : 2.2);
   const [compoundProfits, setCompoundProfits] = useState<boolean>(true);
+  const { t } = useLanguage();
 
   // Math Calculations
   const dailyProfitSimple = capital * (expectedRoiPct / 100) * tradesPerDay;
@@ -53,10 +55,10 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
           </div>
           <div>
             <h2 className="text-lg sm:text-2xl font-black text-white">
-              Earnings Simulator
+              {t('simulator_title')}
             </h2>
             <p className="text-[11px] sm:text-xs text-cyber-textMuted font-mono">
-              Forecast your returns based on live DEX spreads
+              {t('simulator_sub')}
             </p>
           </div>
         </div>
@@ -67,7 +69,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
           {/* Starting Capital */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-slate-300">Working Capital ($):</span>
+              <span className="text-slate-300">{t('working_capital_modal')}</span>
               <span className="text-emerald-400 font-bold">${capital.toLocaleString()}</span>
             </div>
             <input
@@ -84,7 +86,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
           {/* Average Net Profit % per trade */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-slate-300">Avg. Net % per Trade:</span>
+              <span className="text-slate-300">{t('avg_net_per_trade')}</span>
               <span className="text-cyan-400 font-bold">{expectedRoiPct.toFixed(2)}%</span>
             </div>
             <input
@@ -101,7 +103,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
           {/* Number of Trades Per Day */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-slate-300">Trades Executed Per Day:</span>
+              <span className="text-slate-300">{t('trades_per_day')}</span>
               <span className="text-purple-400 font-bold">{tradesPerDay} / day</span>
             </div>
             <input
@@ -118,7 +120,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
           {/* Compound toggle */}
           <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800">
             <span className="text-[11px] sm:text-xs font-mono text-slate-300">
-              Compound Daily Gains:
+              {t('compound_daily')}
             </span>
             <button
               onClick={() => setCompoundProfits(!compoundProfits)}
@@ -128,7 +130,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
                   : 'bg-slate-800 text-slate-400'
               }`}
             >
-              {compoundProfits ? 'COMPOUND ON' : 'SIMPLE ONLY'}
+              {compoundProfits ? t('compound_on') : t('compound_off')}
             </button>
           </div>
 
@@ -138,25 +140,25 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-cyber-dark/90 border border-cyber-border mb-4 sm:mb-6">
           <div>
             <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono mb-1 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-cyan-400" /> Daily Net Profit:
+              <Calendar className="w-3.5 h-3.5 text-cyan-400" /> {t('daily_net_profit')}
             </div>
             <div className="text-xl sm:text-2xl font-black font-mono text-cyan-300">
               +${dailyProfitSimple.toFixed(2)}
             </div>
             <div className="text-[10px] sm:text-[11px] text-cyber-textMuted mt-0.5 font-mono">
-              From {tradesPerDay} executed routes
+              {t('from_trades')} ({tradesPerDay})
             </div>
           </div>
 
           <div>
             <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono mb-1 flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" /> 30-Day Total Net Profit:
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" /> {t('monthly_total_net')}
             </div>
             <div className="text-xl sm:text-3xl font-black font-mono text-emerald-400">
               +${finalMonthlyProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 font-mono">
-              Est. Total: <span className="text-white font-bold">${finalTotalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              {t('est_total_balance')} <span className="text-white font-bold">${finalTotalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           </div>
         </div>
@@ -166,7 +168,7 @@ export const TradeSimulator: React.FC<TradeSimulatorProps> = ({
             onClick={onClose}
             className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-colors"
           >
-            Apply & Back
+            {t('apply_and_back')}
           </button>
         </div>
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ArbitrageFilterState } from '../types/arbitrage';
 import { Search, ArrowUpDown } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface FiltersBarProps {
   filters: ArbitrageFilterState;
@@ -13,6 +14,8 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
   onFilterChange,
   totalFiltered,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="glass-panel rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 border border-cyber-border space-y-3">
       
@@ -24,7 +27,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
           <Search className="w-4 h-4 text-cyber-textMuted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search token (ETH, SOL, ARB, AERO...) or DEX..."
+            placeholder={t('search_placeholder')}
             value={filters.searchQuery}
             onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
             className="w-full pl-9 sm:pl-10 pr-8 py-2 rounded-xl bg-cyber-dark border border-cyber-border text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 font-mono transition-all"
@@ -45,10 +48,10 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
           {/* Arbitrage Type Selector */}
           <div className="flex items-center gap-1 bg-cyber-dark p-0.5 sm:p-1 rounded-xl border border-cyber-border overflow-x-auto text-[11px] sm:text-xs">
             {[
-              { id: 'all', label: 'All' },
-              { id: 'intra_chain', label: 'DEX-to-DEX' },
-              { id: 'cross_chain', label: 'Cross-Chain' },
-              { id: 'triangular', label: '3-Step' },
+              { id: 'all', label: t('filter_all') },
+              { id: 'intra_chain', label: t('filter_intra') },
+              { id: 'cross_chain', label: t('filter_cross') },
+              { id: 'triangular', label: t('filter_triangular') },
             ].map((type) => (
               <button
                 key={type.id}
@@ -76,7 +79,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                     : 'bg-cyber-dark border-cyber-border text-slate-400 hover:text-slate-200'
                 }`}
               >
-                {spread === 0 ? 'All' : `>${spread}%`}
+                {spread === 0 ? t('filter_all') : `>${spread}%`}
               </button>
             ))}
           </div>
@@ -88,22 +91,22 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
       {/* Secondary Sort and Count Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-cyber-border/40 text-[11px] sm:text-xs text-cyber-textMuted font-mono">
         <div>
-          Showing <strong className="text-white">{totalFiltered}</strong> optimal arbitrage pairs
+          {t('showing_pairs')} <strong className="text-white">{totalFiltered}</strong> {t('optimal_pairs')}
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-slate-400">Sort:</span>
+          <span className="text-slate-400">{t('sort_label')}</span>
           <select
             value={filters.sortBy}
             onChange={(e) => onFilterChange({ sortBy: e.target.value as ArbitrageFilterState['sortBy'] })}
             className="bg-cyber-dark border border-cyber-border rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-emerald-500/50 text-[11px] sm:text-xs font-mono cursor-pointer"
           >
-            <option value="netProfitPct">Highest Net % (ROI)</option>
-            <option value="netProfitUsd">Highest Net $ Profit</option>
-            <option value="grossSpreadPct">Gross Spread %</option>
-            <option value="liquidityUsd">Deepest Pool Liquidity</option>
-            <option value="timestamp">Latest Window</option>
+            <option value="netProfitPct">{t('sort_roi')}</option>
+            <option value="netProfitUsd">{t('sort_profit_usd')}</option>
+            <option value="grossSpreadPct">{t('sort_gross_spread')}</option>
+            <option value="liquidityUsd">{t('sort_liquidity')}</option>
+            <option value="timestamp">{t('sort_timestamp')}</option>
           </select>
         </div>
       </div>

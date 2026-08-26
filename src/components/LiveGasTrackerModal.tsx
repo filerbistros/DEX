@@ -2,6 +2,7 @@ import React from 'react';
 import type { ChainGasStatus } from '../services/gasService';
 import { CHAINS } from '../data/chains';
 import { X, Fuel } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface LiveGasTrackerModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const LiveGasTrackerModal: React.FC<LiveGasTrackerModalProps> = ({
   onClose,
   gasStatus,
 }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -35,10 +37,10 @@ export const LiveGasTrackerModal: React.FC<LiveGasTrackerModalProps> = ({
           </div>
           <div>
             <h2 className="text-lg sm:text-2xl font-black text-white">
-              Multi-Chain Gas Matrix
+              {t('gas_tracker_title')}
             </h2>
             <p className="text-[11px] sm:text-xs text-cyber-textMuted font-mono">
-              Live network gas tracker with DEX swap fee estimates
+              {t('gas_tracker_sub')}
             </p>
           </div>
         </div>
@@ -77,7 +79,7 @@ export const LiveGasTrackerModal: React.FC<LiveGasTrackerModalProps> = ({
                     ${gas.gasPriceUsd.toFixed(3)}
                   </div>
                   <div className="text-[9px] sm:text-[10px] text-slate-500 font-mono">
-                    per swap
+                    {t('per_swap')}
                   </div>
                 </div>
               </div>
@@ -86,7 +88,7 @@ export const LiveGasTrackerModal: React.FC<LiveGasTrackerModalProps> = ({
         </div>
 
         <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-900/40 text-cyan-300 text-[11px] sm:text-xs font-mono mb-4 sm:mb-6">
-          💡 <strong>Tip:</strong> L2 networks (Arbitrum, Base, Optimism) & Solana offer &lt;$0.05 gas fees, making micro-spreads profitable.
+          {t('gas_tip')}
         </div>
 
         <div className="flex justify-end">
@@ -94,7 +96,7 @@ export const LiveGasTrackerModal: React.FC<LiveGasTrackerModalProps> = ({
             onClick={onClose}
             className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs hover:bg-cyan-400 transition-colors"
           >
-            Close Tracker
+            {t('close_tracker')}
           </button>
         </div>
 

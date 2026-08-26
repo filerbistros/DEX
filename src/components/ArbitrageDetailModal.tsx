@@ -12,6 +12,7 @@ import {
   Sliders
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ArbitrageDetailModalProps {
   opportunity: ArbitrageOpportunity | null;
@@ -33,6 +34,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
   const [copiedToken, setCopiedToken] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationComplete, setSimulationComplete] = useState(false);
+  const { t } = useLanguage();
 
   // Recalculate everything dynamically with current slider capital
   const opp = recalculateOpportunity(baseOpp, tradeSize, useFlashLoans);
@@ -82,7 +84,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base sm:text-2xl font-black text-white truncate">
-                Arbitrage Plan
+                {t('arbitrage_plan')}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 +{opp.netProfitPct.toFixed(2)}% ROI
@@ -100,7 +102,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
               <span className="text-[11px] sm:text-xs font-semibold text-white uppercase tracking-wider font-mono">
-                Working Capital:
+                {t('working_capital_modal')}
               </span>
             </div>
             <div className="text-right">
@@ -150,7 +152,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
-                <span>Flash Loan</span>
+                <span>{t('flash_loan_badge')}</span>
               </button>
             )}
           </div>
@@ -160,7 +162,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
             <div className="mt-2.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] sm:text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>
-                Order size (${tradeSize.toLocaleString()}) exceeds suggested pool depth (${opp.maxCapacityUsd.toLocaleString()}). Slippage may reduce profit.
+                {t('capacity_warning_start')}{tradeSize.toLocaleString()}{t('capacity_warning_end')}
               </span>
             </div>
           )}
@@ -169,7 +171,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
         {/* Step-by-Step Execution Route */}
         <div className="mb-4 sm:mb-6">
           <h3 className="text-[11px] sm:text-xs font-bold text-cyber-textMuted uppercase tracking-wider font-mono mb-2.5">
-            Execution Steps ({opp.executionSteps.length} Actions)
+            {t('execution_steps')} ({opp.executionSteps.length} {t('actions')})
           </h3>
 
           <div className="space-y-2 sm:space-y-3">
@@ -202,7 +204,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] sm:text-xs font-mono font-bold whitespace-nowrap transition-all self-end sm:self-center"
                 >
-                  <span>Open {step.dexOrBridgeName}</span>
+                  <span>{t('open_btn')} {step.dexOrBridgeName}</span>
                   <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </a>
               </div>
@@ -213,36 +215,36 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
         {/* Profit and Costs Summary Panel */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-cyber-dark/80 border border-cyber-border mb-4 sm:mb-6">
           <div>
-            <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono mb-1">Total Estimated Costs:</div>
+            <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono mb-1">{t('total_estimated_costs')}</div>
             <div className="text-[10px] sm:text-xs font-mono space-y-1 text-slate-300">
               <div className="flex justify-between">
-                <span>DEX Swap Fees:</span>
+                <span>{t('dex_fees')}:</span>
                 <span>-${((tradeSize * (opp.buyDex.defaultFeePct + opp.sellDex.defaultFeePct)) / 100).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Gas Fees:</span>
+                <span>{t('network_gas_cost')}</span>
                 <span>-${(opp.estBuyGasUsd + opp.estSellGasUsd).toFixed(3)}</span>
               </div>
               {opp.type === 'cross_chain' && (
                 <div className="flex justify-between text-purple-300">
-                  <span>Bridge Fee:</span>
+                  <span>{t('bridge_fee_label')}:</span>
                   <span>-${opp.estBridgeFeeUsd.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Price Impact / Slippage ({opp.priceImpactPct}%):</span>
+                <span>{t('est_price_impact')} ({opp.priceImpactPct}%):</span>
                 <span>-${((tradeSize * opp.priceImpactPct) / 100).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col justify-center sm:items-end border-t sm:border-t-0 sm:border-l border-slate-800 pt-2.5 sm:pt-0 sm:pl-4">
-            <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono">Net Profit:</div>
+            <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono">{t('net_profit')}:</div>
             <div className="text-xl sm:text-3xl font-black font-mono text-emerald-400">
               +${opp.netProfitUsd.toFixed(2)}
             </div>
             <div className="text-[10px] sm:text-xs font-mono font-bold text-emerald-500">
-              +{opp.netProfitPct.toFixed(2)}% Net Return
+              +{opp.netProfitPct.toFixed(2)}% {t('net_return')}
             </div>
           </div>
         </div>
@@ -250,7 +252,7 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
         {/* Token Contract Copy & Bottom Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800">
           <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-slate-400 self-start sm:self-auto">
-            <span className="truncate max-w-[200px] sm:max-w-none">Contract: {opp.tokenIn.address.slice(0, 6)}...{opp.tokenIn.address.slice(-4)}</span>
+            <span className="truncate max-w-[200px] sm:max-w-none">{t('token_contract')} {opp.tokenIn.address.slice(0, 6)}...{opp.tokenIn.address.slice(-4)}</span>
             <button
               onClick={() => handleCopyContract(opp.tokenIn.address)}
               className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"
@@ -269,17 +271,17 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
               {isSimulating ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Simulating...</span>
+                  <span>{t('simulating')}</span>
                 </>
               ) : simulationComplete ? (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Simulated (+${opp.netProfitUsd.toFixed(2)})</span>
+                  <span>{t('simulated')} (+${opp.netProfitUsd.toFixed(2)})</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Simulate 1-Click Execution</span>
+                  <span>{t('simulate_execution')}</span>
                 </>
               )}
             </button>

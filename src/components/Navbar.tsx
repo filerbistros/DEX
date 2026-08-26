@@ -11,9 +11,11 @@ import {
   Sliders,
   Radio,
   Menu,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 import type { ChainGasStatus } from '../services/gasService';
+import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   isScanning: boolean;
@@ -47,10 +49,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleLiveMainnet,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   const avgGasUsd = gasStatus.length > 0 
     ? (gasStatus.reduce((acc, g) => acc + g.gasPriceUsd, 0) / gasStatus.length).toFixed(3)
     : '0.04';
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'ru' ? 'en' : 'ru');
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-cyber-border/70 bg-[#070b13]/90 backdrop-blur-xl">
@@ -70,15 +77,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <h1 className="font-extrabold text-base sm:text-xl tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-purple-400 bg-clip-text text-transparent">
-                  DEX ARB
+                  {t('app_title')}
                 </h1>
                 <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold tracking-wider uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  PRO
+                  {t('app_badge')}
                 </span>
               </div>
               <p className="text-[10px] text-cyber-textMuted hidden lg:flex items-center gap-1 font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                Multi-Chain Arbitrage Terminal
+                {t('app_subtitle')}
               </p>
             </div>
           </div>
@@ -94,17 +101,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-emerald-500/20 border-emerald-500/80 text-emerald-300 shadow-[0_0_12px_rgba(0,245,155,0.3)]'
                   : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
               }`}
-              title="Switch between Live DexScreener Market Feeds and Simulation"
+              title={isLiveMainnetMode ? 'Active: Live Mainnet DexScreener' : 'Active: High Frequency Simulation'}
             >
               <Radio className={`w-3.5 h-3.5 ${isLiveMainnetMode ? 'text-emerald-400 animate-pulse' : 'text-amber-400'}`} />
-              <span className="hidden xl:inline">MODE:</span>
-              <span>{isLiveMainnetMode ? 'LIVE MAINNET' : 'SIMULATION'}</span>
+              <span className="hidden xl:inline">{t('mode_label')}</span>
+              <span>{isLiveMainnetMode ? t('mode_live') : t('mode_sim')}</span>
             </button>
 
             {/* Quick Capital Preset */}
             <div className="hidden xl:flex items-center bg-cyber-card border border-cyber-border rounded-xl p-0.5 text-xs">
               <span className="px-2 text-cyber-textMuted font-mono flex items-center gap-1">
-                <Flame className="w-3 h-3 text-amber-400" /> Capital:
+                <Flame className="w-3 h-3 text-amber-400" /> {t('capital_label')}
               </span>
               {[500, 1000, 5000, 10000].map((size) => (
                 <button
@@ -129,12 +136,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_12px_rgba(139,92,246,0.25)]'
                   : 'bg-cyber-card border-cyber-border text-cyber-textMuted hover:text-slate-200'
               }`}
-              title="Flash Loans: Trade with $0 upfront capital using Aave / Balancer pools"
+              title="Aave V3 Flash Loan"
             >
               <Layers className="w-3.5 h-3.5 text-purple-400" />
-              <span className="hidden lg:inline">Flash:</span>
+              <span className="hidden lg:inline">{t('flash_loan_label')}</span>
               <span className={useFlashLoans ? 'text-purple-300 font-bold' : 'text-slate-500'}>
-                {useFlashLoans ? 'ON' : 'OFF'}
+                {useFlashLoans ? t('flash_on') : t('flash_off')}
               </span>
             </button>
 
@@ -142,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenGasModal}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyan-500/40 text-xs font-medium text-slate-300 hover:text-cyan-300 transition-all"
-              title="Open Live Gas Tracker"
+              title="Gas Matrix"
             >
               <Fuel className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
               <span className="font-mono text-cyan-400 font-bold">${avgGasUsd}</span>
@@ -156,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                   : 'bg-cyber-card border-cyber-border text-slate-500 hover:text-slate-300'
               }`}
-              title={soundAlertsEnabled ? 'Sound Alerts: Enabled (>1.5% spread)' : 'Sound Alerts: Muted'}
+              title={soundAlertsEnabled ? t('sound_enabled') : t('sound_muted')}
             >
               {soundAlertsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
@@ -173,12 +180,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               {isScanning ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span className="hidden lg:inline">SCANNING</span>
+                  <span className="hidden lg:inline">{t('scanning')}</span>
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5" />
-                  <span>RESUME</span>
+                  <span>{t('resume')}</span>
                 </>
               )}
             </button>
@@ -189,13 +196,31 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all"
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span>Simulator</span>
+              <span>{t('simulator')}</span>
+            </button>
+
+            {/* Language Selector Switcher */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-xs font-mono font-bold text-slate-200 hover:text-white transition-all shadow-sm"
+              title="Переключить язык / Switch Language"
+            >
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{language === 'ru' ? '🇷🇺 RU' : '🇬🇧 EN'}</span>
             </button>
 
           </div>
 
           {/* Mobile Quick Controls */}
           <div className="flex md:hidden items-center gap-1.5">
+            {/* Language button on mobile */}
+            <button
+              onClick={toggleLanguage}
+              className="px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 text-[10px] font-mono font-bold text-slate-200"
+            >
+              {language === 'ru' ? 'RU' : 'EN'}
+            </button>
+
             {/* Live mode toggle button on mobile */}
             <button
               onClick={onToggleLiveMainnet}
@@ -206,14 +231,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Radio className="w-2.5 h-2.5" />
-              <span>{isLiveMainnetMode ? 'LIVE' : 'SIM'}</span>
+              <span>{isLiveMainnetMode ? t('mode_live_short') : t('mode_sim_short')}</span>
             </button>
 
             {/* Simulator quick button */}
             <button
               onClick={onOpenSimulatorModal}
               className="p-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400"
-              title="Simulator"
+              title={t('simulator')}
             >
               <Sliders className="w-4 h-4" />
             </button>
@@ -234,7 +259,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="md:hidden py-3 border-t border-cyber-border/80 space-y-2.5 text-xs font-mono">
             {/* Capital buttons */}
             <div>
-              <span className="text-[11px] text-cyber-textMuted mb-1 block">Working Capital:</span>
+              <span className="text-[11px] text-cyber-textMuted mb-1 block">{t('working_capital')}</span>
               <div className="grid grid-cols-4 gap-1.5">
                 {[500, 1000, 5000, 10000].map((size) => (
                   <button
@@ -263,7 +288,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
-                <span>Flash: {useFlashLoans ? 'ON' : 'OFF'}</span>
+                <span>{t('flash_loan_label')} {useFlashLoans ? t('flash_on') : t('flash_off')}</span>
               </button>
 
               <button
@@ -271,7 +296,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="py-2 rounded-xl bg-cyber-dark border border-cyber-border text-cyan-300 flex items-center justify-center gap-1 font-bold"
               >
                 <Fuel className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Gas ${avgGasUsd}</span>
+                <span>${avgGasUsd}</span>
               </button>
 
               <button
@@ -283,7 +308,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 {soundAlertsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                <span>{soundAlertsEnabled ? 'Sound ON' : 'Muted'}</span>
+                <span>{soundAlertsEnabled ? t('sound_on_btn') : t('sound_off_btn')}</span>
               </button>
             </div>
           </div>

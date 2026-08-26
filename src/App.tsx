@@ -12,6 +12,7 @@ import { scanLiveMainnetArbitrage } from './services/liveDexApi';
 import { soundAlerts } from './services/audioAlerts';
 import { getAllChainsGas } from './services/gasService';
 import type { ChainGasStatus } from './services/gasService';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
 import { Navbar } from './components/Navbar';
 import { ChainSelector } from './components/ChainSelector';
@@ -53,7 +54,9 @@ function loadSavedFilters(): ArbitrageFilterState {
   return DEFAULT_FILTERS;
 }
 
-export function App() {
+function MainAppContent() {
+  const { t } = useLanguage();
+
   // Global Filters & User Settings (Persisted in localStorage)
   const [filters, setFilters] = useState<ArbitrageFilterState>(() => loadSavedFilters());
 
@@ -265,13 +268,13 @@ export function App() {
             <div className="flex items-center gap-2 text-emerald-300">
               <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
               <span>
-                <strong>LIVE MAINNET MODE ACTIVE:</strong> Streaming real pools & prices via DexScreener REST API & On-Chain DEX Router data.
+                <strong>{t('live_banner_title')}</strong> {t('live_banner_desc')}
               </span>
             </div>
             {isFetchingLive && (
               <span className="text-emerald-400 flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
-                Polling DexScreener...
+                {t('polling_live')}
               </span>
             )}
           </div>
@@ -290,7 +293,7 @@ export function App() {
         {/* Chain selector bar */}
         <div className="space-y-2">
           <div className="text-xs font-mono text-cyber-textMuted uppercase tracking-wider">
-            Select Network or Cross-Chain Bridge Mode:
+            {t('select_network_label')}
           </div>
           <ChainSelector
             selectedChain={filters.selectedChain}
@@ -325,16 +328,16 @@ export function App() {
               <AlertCircle className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">No Arbitrage Pairs Found</h3>
+              <h3 className="text-lg font-bold text-white">{t('no_pairs_found')}</h3>
               <p className="text-sm text-cyber-textMuted font-mono max-w-md mx-auto mt-1">
-                No active routes match the current filter criteria (Min Net {filters.minSpreadPct}%). Try switching network or lowering spread threshold.
+                {t('no_pairs_desc')}
               </p>
             </div>
             <button
               onClick={() => handleFilterUpdate({ selectedChain: 'all', minSpreadPct: 0, searchQuery: '', arbitrageType: 'all' })}
               className="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-mono font-bold hover:bg-emerald-500/30 transition-all"
             >
-              Reset All Filters
+              {t('reset_filters')}
             </button>
           </div>
         )}
@@ -346,10 +349,10 @@ export function App() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>DEX Arbitrage Scanner Terminal v2.0 • Real-time Cross-Chain Bridge & Gas Engine</span>
+            <span>{t('footer_text')}</span>
           </div>
           <div>
-            Built for High-Speed Multi-DEX Profit Maximization
+            {t('footer_sub')}
           </div>
         </div>
       </footer>
@@ -375,6 +378,14 @@ export function App() {
       />
 
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <LanguageProvider>
+      <MainAppContent />
+    </LanguageProvider>
   );
 }
 

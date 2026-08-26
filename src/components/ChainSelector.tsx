@@ -1,7 +1,8 @@
 import React from 'react';
-import type { ChainId, ArbitrageOpportunity } from '../types/arbitrage';
-import { CHAIN_LIST } from '../data/chains';
-import { Globe, ArrowLeftRight } from 'lucide-react';
+import type { ArbitrageOpportunity, ChainId } from '../types/arbitrage';
+import { CHAINS } from '../data/chains';
+import { Network, GitFork } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ChainSelectorProps {
   selectedChain: 'all' | 'cross_chain' | ChainId;
@@ -14,88 +15,102 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   onSelectChain,
   opportunities,
 }) => {
+  const { t } = useLanguage();
+
   // Count opportunities per chain
-  const getCount = (chainId: 'all' | 'cross_chain' | ChainId) => {
-    if (chainId === 'all') return opportunities.length;
-    if (chainId === 'cross_chain') return opportunities.filter(o => o.type === 'cross_chain').length;
-    return opportunities.filter(o => o.buyChain.id === chainId || o.sellChain.id === chainId).length;
+  const chainCounts: Record<string, number> = {
+    all: opportunities.length,
+    cross_chain: opportunities.filter(o => o.type === 'cross_chain').length,
   };
 
+  Object.keys(CHAINS).forEach((chainId) => {
+    chainCounts[chainId] = opportunities.filter(
+      o => o.buyChain.id === chainId || o.sellChain.id === chainId
+    ).length;
+  });
+
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-      
-      {/* All Chains Option */}
-      <button
-        onClick={() => onSelectChain('all')}
-        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
-          selectedChain === 'all'
-            ? 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border-emerald-500/50 text-emerald-400 shadow-md shadow-emerald-500/10'
-            : 'bg-cyber-card border-cyber-border text-slate-400 hover:text-slate-200 hover:border-slate-700'
-        }`}
-      >
-        <Globe className="w-4 h-4 text-emerald-400" />
-        <span>All Networks</span>
-        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-slate-800/80 text-slate-300">
-          {getCount('all')}
-        </span>
-      </button>
+    <div className="w-full overflow-x-auto scrollbar-none pb-2">
+      <div className="flex items-center gap-2 min-w-max">
+        
+        {/* All Networks Filter */}
+        <button
+          onClick={() => onSelectChain('all')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+            selectedChain === 'all'
+              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/60 shadow-[0_0_15px_rgba(0,245,155,0.25)]'
+              : 'bg-cyber-card border border-cyber-border text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+          }`}
+        >
+          <Network className="w-3.5 h-3.5" />
+          <span>{t('all_networks')}</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+            selectedChain === 'all' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-slate-800 text-slate-400'
+          }`}>
+            {chainCounts.all}
+          </span>
+        </button>
 
-      {/* Cross Chain Special Tab */}
-      <button
-        onClick={() => onSelectChain('cross_chain')}
-        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
-          selectedChain === 'cross_chain'
-            ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/50 text-purple-300 shadow-md shadow-purple-500/10'
-            : 'bg-cyber-card border-cyber-border text-slate-400 hover:text-slate-200 hover:border-slate-700'
-        }`}
-      >
-        <ArrowLeftRight className="w-4 h-4 text-purple-400" />
-        <span>Cross-Chain Bridges</span>
-        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-purple-950/60 text-purple-300 border border-purple-800/40">
-          {getCount('cross_chain')}
-        </span>
-      </button>
+        {/* Cross-Chain Bridge Filter */}
+        <button
+          onClick={() => onSelectChain('cross_chain')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+            selectedChain === 'cross_chain'
+              ? 'bg-purple-500/25 text-purple-300 border border-purple-500/60 shadow-[0_0_15px_rgba(139,92,246,0.25)]'
+              : 'bg-cyber-card border border-cyber-border text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+          }`}
+        >
+          <GitFork className="w-3.5 h-3.5 text-purple-400" />
+          <span>{t('cross_chain_bridges')}</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+            selectedChain === 'cross_chain' ? 'bg-purple-500/30 text-purple-200' : 'bg-slate-800 text-slate-400'
+          }`}>
+            {chainCounts.cross_chain}
+          </span>
+        </button>
 
-      {/* Individual Chain Buttons */}
-      {CHAIN_LIST.map((chain) => {
-        const count = getCount(chain.id);
-        const isSelected = selectedChain === chain.id;
+        {/* Individual Blockchain Filters */}
+        {Object.values(CHAINS).map((chain) => {
+          const isSelected = selectedChain === chain.id;
+          const count = chainCounts[chain.id] || 0;
 
-        return (
-          <button
-            key={chain.id}
-            onClick={() => onSelectChain(chain.id)}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
-              isSelected
-                ? 'border-opacity-80 text-white shadow-lg'
-                : 'bg-cyber-card border-cyber-border text-slate-400 hover:text-slate-200 hover:border-slate-700'
-            }`}
-            style={{
-              backgroundColor: isSelected ? chain.badgeBg : undefined,
-              borderColor: isSelected ? chain.color : undefined,
-            }}
-          >
-            <img 
-              src={chain.logo} 
-              alt={chain.name} 
-              className="w-4 h-4 rounded-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }} 
-            />
-            <span>{chain.name}</span>
-            <span 
-              className="px-1.5 py-0.5 rounded-full text-[10px] font-mono"
-              style={{
-                backgroundColor: isSelected ? 'rgba(0,0,0,0.4)' : 'rgba(30,41,59,0.7)',
-                color: isSelected ? chain.color : '#94a3b8',
-              }}
+          return (
+            <button
+              key={chain.id}
+              onClick={() => onSelectChain(chain.id)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono font-medium transition-all ${
+                isSelected
+                  ? 'border shadow-md'
+                  : 'bg-cyber-card border border-cyber-border text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              }`}
+              style={
+                isSelected
+                  ? {
+                      backgroundColor: chain.badgeBg,
+                      borderColor: chain.color,
+                      color: chain.color,
+                      boxShadow: `0 0 14px ${chain.color}33`,
+                    }
+                  : {}
+              }
             >
-              {count}
-            </span>
-          </button>
-        );
-      })}
+              <img 
+                src={chain.logo} 
+                alt={chain.name}
+                className="w-4 h-4 rounded-full object-cover"
+                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+              />
+              <span>{chain.name}</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                isSelected ? 'bg-black/30 font-bold' : 'bg-slate-800 text-slate-400'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+
+      </div>
     </div>
   );
 };
