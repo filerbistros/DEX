@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { 
   ArbitrageOpportunity, 
   ArbitrageFilterState
@@ -8,6 +8,7 @@ import {
   generateRandomOpportunity,
   recalculateOpportunity 
 } from './services/arbitrageScanner';
+import { scanLiveMainnetArbitrage } from './services/liveDexApi';
 import { soundAlerts } from './services/audioAlerts';
 import { getAllChainsGas } from './services/gasService';
 import type { ChainGasStatus } from './services/gasService';
@@ -20,34 +21,61 @@ import { ArbitrageCard } from './components/ArbitrageCard';
 import { ArbitrageDetailModal } from './components/ArbitrageDetailModal';
 import { TradeSimulator } from './components/TradeSimulator';
 import { LiveGasTrackerModal } from './components/LiveGasTrackerModal';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Radio } from 'lucide-react';
+
+const STORAGE_KEY = 'dex_arb_user_preferences_v2';
+
+const DEFAULT_FILTERS: ArbitrageFilterState = {
+  selectedChain: 'all',
+  minSpreadPct: 0,
+  minLiquidityUsd: 0,
+  arbitrageType: 'all',
+  tradeSizeUsd: 1000,
+  useFlashLoansOnly: false,
+  minNetProfitUsd: 0,
+  sortBy: 'netProfitPct',
+  sortOrder: 'desc',
+  searchQuery: '',
+  soundAlertsEnabled: true,
+  soundThresholdPct: 1.5,
+  isLiveMainnetMode: false,
+};
+
+function loadSavedFilters(): ArbitrageFilterState {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
+    }
+  } catch {
+    // ignore
+  }
+  return DEFAULT_FILTERS;
+}
 
 export function App() {
+  // Global Filters & User Settings (Persisted in localStorage)
+  const [filters, setFilters] = useState<ArbitrageFilterState>(() => loadSavedFilters());
+
   // Core Scanner State
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(() => generateInitialOpportunities());
   const [isScanning, setIsScanning] = useState<boolean>(true);
   const [gasStatus, setGasStatus] = useState<ChainGasStatus[]>(() => getAllChainsGas());
-
-  // Global Filters & User Settings
-  const [filters, setFilters] = useState<ArbitrageFilterState>({
-    selectedChain: 'all',
-    minSpreadPct: 0,
-    minLiquidityUsd: 0,
-    arbitrageType: 'all',
-    tradeSizeUsd: 1000,
-    useFlashLoansOnly: false,
-    minNetProfitUsd: 0,
-    sortBy: 'netProfitPct',
-    sortOrder: 'desc',
-    searchQuery: '',
-    soundAlertsEnabled: true,
-    soundThresholdPct: 1.5,
-  });
+  const [isFetchingLive, setIsFetchingLive] = useState<boolean>(false);
 
   // Modal States
   const [selectedOpportunity, setSelectedOpportunity] = useState<ArbitrageOpportunity | null>(null);
   const [isGasModalOpen, setIsGasModalOpen] = useState<boolean>(false);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState<boolean>(false);
+
+  // Persist user settings on change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+    } catch {
+      // ignore
+    }
+  }, [filters]);
 
   // Sound sync
   useEffect(() => {
@@ -62,9 +90,38 @@ export function App() {
     return () => clearInterval(gasInterval);
   }, []);
 
-  // Live DEX Arbitrage Scanner Loop
+  // Fetch real DexScreener data when in Live Mainnet mode
+  const fetchLiveMainnetData = useCallback(async () => {
+    setIsFetchingLive(true);
+    try {
+      const liveOpps = await scanLiveMainnetArbitrage(filters.tradeSizeUsd, filters.useFlashLoansOnly);
+      if (liveOpps.length > 0) {
+        setOpportunities(liveOpps);
+        // Play sound if any high spread found
+        const topProfit = liveOpps[0]?.netProfitPct || 0;
+        if (topProfit >= filters.soundThresholdPct) {
+          soundAlerts.playOpportunityFound(topProfit);
+        }
+      }
+    } catch (e) {
+      console.warn('Live fetch error:', e);
+    } finally {
+      setIsFetchingLive(false);
+    }
+  }, [filters.tradeSizeUsd, filters.useFlashLoansOnly, filters.soundThresholdPct]);
+
+  // Live Mode polling
   useEffect(() => {
-    if (!isScanning) return;
+    if (!filters.isLiveMainnetMode || !isScanning) return;
+
+    fetchLiveMainnetData();
+    const liveInterval = setInterval(fetchLiveMainnetData, 8000);
+    return () => clearInterval(liveInterval);
+  }, [filters.isLiveMainnetMode, isScanning, fetchLiveMainnetData]);
+
+  // Simulation Mode Scanner Loop
+  useEffect(() => {
+    if (filters.isLiveMainnetMode || !isScanning) return;
 
     const interval = setInterval(() => {
       setOpportunities((prev) => {
@@ -101,7 +158,7 @@ export function App() {
     }, 3500);
 
     return () => clearInterval(interval);
-  }, [isScanning, filters.tradeSizeUsd, filters.useFlashLoansOnly, filters.soundThresholdPct]);
+  }, [filters.isLiveMainnetMode, isScanning, filters.tradeSizeUsd, filters.useFlashLoansOnly, filters.soundThresholdPct]);
 
   // Re-calculate all opportunities when tradeSize or flashLoan toggles change
   const handleTradeSizeChange = (newSize: number) => {
@@ -117,6 +174,16 @@ export function App() {
     setOpportunities((prev) => 
       prev.map((opp) => recalculateOpportunity(opp, filters.tradeSizeUsd, nextState))
     );
+  };
+
+  const handleToggleLiveMode = () => {
+    const nextLiveMode = !filters.isLiveMainnetMode;
+    setFilters((prev) => ({ ...prev, isLiveMainnetMode: nextLiveMode }));
+    if (nextLiveMode) {
+      fetchLiveMainnetData();
+    } else {
+      setOpportunities(generateInitialOpportunities());
+    }
   };
 
   const handleFilterUpdate = (newFilters: Partial<ArbitrageFilterState>) => {
@@ -187,7 +254,29 @@ export function App() {
         gasStatus={gasStatus}
         onOpenGasModal={() => setIsGasModalOpen(true)}
         onOpenSimulatorModal={() => setIsSimulatorOpen(true)}
+        isLiveMainnetMode={filters.isLiveMainnetMode}
+        onToggleLiveMainnet={handleToggleLiveMode}
       />
+
+      {/* Live Mainnet Active Banner */}
+      {filters.isLiveMainnetMode && (
+        <div className="bg-gradient-to-r from-emerald-950/60 via-emerald-900/40 to-teal-950/60 border-b border-emerald-500/30 py-2 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center gap-2 text-emerald-300">
+              <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <span>
+                <strong>LIVE MAINNET MODE ACTIVE:</strong> Streaming real pools & prices via DexScreener REST API & On-Chain DEX Router data.
+              </span>
+            </div>
+            {isFetchingLive && (
+              <span className="text-emerald-400 flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
+                Polling DexScreener...
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
