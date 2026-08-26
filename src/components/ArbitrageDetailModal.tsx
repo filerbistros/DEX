@@ -63,48 +63,48 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
   const isExceedingCapacity = tradeSize > opp.maxCapacityUsd;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-3xl glass-panel bg-[#0c111d] border border-cyber-border rounded-3xl p-6 sm:p-8 shadow-2xl my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-3xl glass-panel bg-[#0c111d] border border-cyber-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl my-4 max-h-[92vh] overflow-y-auto">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors z-10"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-emerald-400" />
+        <div className="flex items-center gap-3 mb-4 sm:mb-6 pr-10">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-black text-white">
-                Arbitrage Execution Plan
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-base sm:text-2xl font-black text-white truncate">
+                Arbitrage Plan
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 +{opp.netProfitPct.toFixed(2)}% ROI
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-cyber-textMuted font-mono">
+            <p className="text-[11px] sm:text-sm text-cyber-textMuted font-mono truncate">
               {opp.tokenIn.symbol} / {opp.tokenOut.symbol} • {opp.buyDex.name} ➔ {opp.sellDex.name}
             </p>
           </div>
         </div>
 
         {/* Trade Size & Capital Calculator */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-cyber-dark/90 border border-cyber-border mb-6">
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <div className="flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
-                Simulated Capital:
+        <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-cyber-dark/90 border border-cyber-border mb-4 sm:mb-6">
+          <div className="flex items-center justify-between gap-4 mb-2 sm:mb-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
+              <span className="text-[11px] sm:text-xs font-semibold text-white uppercase tracking-wider font-mono">
+                Working Capital:
               </span>
             </div>
             <div className="text-right">
-              <span className="text-xl font-extrabold font-mono text-emerald-400">
+              <span className="text-lg sm:text-xl font-extrabold font-mono text-emerald-400">
                 ${tradeSize.toLocaleString()}
               </span>
             </div>
@@ -123,18 +123,18 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
 
           {/* Quick preset buttons */}
           <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-            <div className="flex gap-1.5 flex-wrap">
-              {[500, 1000, 2500, 5000, 10000, 20000].map((amount) => (
+            <div className="flex gap-1 sm:gap-1.5 flex-wrap">
+              {[500, 1000, 2500, 5000, 10000].map((amount) => (
                 <button
                   key={amount}
                   onClick={() => setTradeSize(amount)}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-xs border transition-all ${
+                  className={`px-2 sm:px-2.5 py-1 rounded-lg font-mono text-[10px] sm:text-xs border transition-all ${
                     tradeSize === amount
                       ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 font-bold'
                       : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  ${amount.toLocaleString()}
+                  ${amount >= 1000 ? `${amount / 1000}k` : amount}
                 </button>
               ))}
             </div>
@@ -143,21 +143,21 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
             {opp.flashLoanEligible && (
               <button
                 onClick={() => setUseFlashLoans(!useFlashLoans)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border font-mono text-xs transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-mono text-[10px] sm:text-xs transition-all ${
                   useFlashLoans
                     ? 'bg-purple-500/20 border-purple-500 text-purple-300 font-bold'
                     : 'bg-slate-900 border-slate-800 text-slate-400'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
-                <span>Use Flash Loan</span>
+                <span>Flash Loan</span>
               </button>
             )}
           </div>
 
           {/* Warning if capacity exceeded */}
           {isExceedingCapacity && (
-            <div className="mt-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+            <div className="mt-2.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] sm:text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>
                 Order size (${tradeSize.toLocaleString()}) exceeds suggested pool depth (${opp.maxCapacityUsd.toLocaleString()}). Slippage may reduce profit.
@@ -167,29 +167,29 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
         </div>
 
         {/* Step-by-Step Execution Route */}
-        <div className="mb-6">
-          <h3 className="text-xs font-bold text-cyber-textMuted uppercase tracking-wider font-mono mb-3">
+        <div className="mb-4 sm:mb-6">
+          <h3 className="text-[11px] sm:text-xs font-bold text-cyber-textMuted uppercase tracking-wider font-mono mb-2.5">
             Execution Steps ({opp.executionSteps.length} Actions)
           </h3>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {opp.executionSteps.map((step) => (
               <div 
                 key={step.stepNumber}
-                className="p-3.5 sm:p-4 rounded-2xl bg-[#090d17] border border-slate-800/80 hover:border-emerald-500/30 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#090d17] border border-slate-800/80 hover:border-emerald-500/30 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-xl bg-slate-800 flex items-center justify-center font-mono font-bold text-xs text-emerald-400 flex-shrink-0">
+                <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-slate-800 flex items-center justify-center font-mono font-bold text-xs text-emerald-400 flex-shrink-0">
                     {step.stepNumber}
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 sm:gap-2 flex-wrap">
                       <span>{step.title}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                      <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
                         {step.dexOrBridgeName}
                       </span>
                     </div>
-                    <p className="text-xs text-cyber-textMuted mt-0.5">
+                    <p className="text-[10px] sm:text-xs text-cyber-textMuted mt-0.5">
                       {step.description}
                     </p>
                   </div>
@@ -200,10 +200,10 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
                   href={step.linkUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold whitespace-nowrap transition-all self-end sm:self-center"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] sm:text-xs font-mono font-bold whitespace-nowrap transition-all self-end sm:self-center"
                 >
                   <span>Open {step.dexOrBridgeName}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </a>
               </div>
             ))}
@@ -211,10 +211,10 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
         </div>
 
         {/* Profit and Costs Summary Panel */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-cyber-dark/80 border border-cyber-border mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-cyber-dark/80 border border-cyber-border mb-4 sm:mb-6">
           <div>
-            <div className="text-xs text-cyber-textMuted font-mono mb-1">Total Estimated Costs:</div>
-            <div className="text-xs font-mono space-y-1 text-slate-300">
+            <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono mb-1">Total Estimated Costs:</div>
+            <div className="text-[10px] sm:text-xs font-mono space-y-1 text-slate-300">
               <div className="flex justify-between">
                 <span>DEX Swap Fees:</span>
                 <span>-${((tradeSize * (opp.buyDex.defaultFeePct + opp.sellDex.defaultFeePct)) / 100).toFixed(2)}</span>
@@ -236,21 +236,21 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col justify-center sm:items-end border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-4">
-            <div className="text-xs text-cyber-textMuted font-mono">Net Profit in Pocket:</div>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
+          <div className="flex flex-col justify-center sm:items-end border-t sm:border-t-0 sm:border-l border-slate-800 pt-2.5 sm:pt-0 sm:pl-4">
+            <div className="text-[11px] sm:text-xs text-cyber-textMuted font-mono">Net Profit:</div>
+            <div className="text-xl sm:text-3xl font-black font-mono text-emerald-400">
               +${opp.netProfitUsd.toFixed(2)}
             </div>
-            <div className="text-xs font-mono font-bold text-emerald-500">
+            <div className="text-[10px] sm:text-xs font-mono font-bold text-emerald-500">
               +{opp.netProfitPct.toFixed(2)}% Net Return
             </div>
           </div>
         </div>
 
         {/* Token Contract Copy & Bottom Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800">
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-            <span>Contract: {opp.tokenIn.address.slice(0, 6)}...{opp.tokenIn.address.slice(-4)}</span>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-slate-400 self-start sm:self-auto">
+            <span className="truncate max-w-[200px] sm:max-w-none">Contract: {opp.tokenIn.address.slice(0, 6)}...{opp.tokenIn.address.slice(-4)}</span>
             <button
               onClick={() => handleCopyContract(opp.tokenIn.address)}
               className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300"
@@ -260,21 +260,21 @@ export const ArbitrageDetailModal: React.FC<ArbitrageDetailModalProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <button
               onClick={handleSimulateExecution}
               disabled={isSimulating}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all"
             >
               {isSimulating ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Simulating Arbitrage...</span>
+                  <span>Simulating...</span>
                 </>
               ) : simulationComplete ? (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Trade Simulated (+$ {opp.netProfitUsd.toFixed(2)})</span>
+                  <span>Simulated (+${opp.netProfitUsd.toFixed(2)})</span>
                 </>
               ) : (
                 <>

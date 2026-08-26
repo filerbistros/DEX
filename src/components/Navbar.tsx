@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Zap, 
   Volume2, 
@@ -8,7 +8,10 @@ import {
   Layers, 
   Flame, 
   Play, 
-  Sliders
+  Sliders,
+  Radio,
+  Menu,
+  X
 } from 'lucide-react';
 import type { ChainGasStatus } from '../services/gasService';
 
@@ -24,6 +27,8 @@ interface NavbarProps {
   gasStatus: ChainGasStatus[];
   onOpenGasModal: () => void;
   onOpenSimulatorModal: () => void;
+  isLiveMainnetMode: boolean;
+  onToggleLiveMainnet: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,137 +43,252 @@ export const Navbar: React.FC<NavbarProps> = ({
   gasStatus,
   onOpenGasModal,
   onOpenSimulatorModal,
+  isLiveMainnetMode,
+  onToggleLiveMainnet,
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const avgGasUsd = gasStatus.length > 0 
     ? (gasStatus.reduce((acc, g) => acc + g.gasPriceUsd, 0) / gasStatus.length).toFixed(3)
     : '0.04';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cyber-border/70 bg-[#070b13]/85 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
-        
-        {/* Logo & Live Status */}
-        <div className="flex items-center gap-3.5">
-          <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-500/30 glow-emerald">
-            <Zap className="w-6 h-6 text-emerald-400 animate-pulse" />
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-            </span>
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-purple-400 bg-clip-text text-transparent">
-                DEX ARB SCANNER
-              </h1>
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold tracking-wider uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                PRO 2.0
+    <header className="sticky top-0 z-40 border-b border-cyber-border/70 bg-[#070b13]/90 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-18 gap-2">
+          
+          {/* Logo & Live Status */}
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+            <div className="relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-500/30 glow-emerald">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 animate-pulse" />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
             </div>
-            <p className="text-xs text-cyber-textMuted hidden sm:flex items-center gap-1.5 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              Real-time DEX & Cross-Chain Arbitrage Terminal
-            </p>
+
+            <div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="font-extrabold text-base sm:text-xl tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-purple-400 bg-clip-text text-transparent">
+                  DEX ARB
+                </h1>
+                <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold tracking-wider uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  PRO
+                </span>
+              </div>
+              <p className="text-[10px] text-cyber-textMuted hidden lg:flex items-center gap-1 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                Multi-Chain Arbitrage Terminal
+              </p>
+            </div>
           </div>
+
+          {/* Desktop & Tablet Actions */}
+          <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
+            
+            {/* Mode Switch Toggle */}
+            <button
+              onClick={onToggleLiveMainnet}
+              className={`flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all ${
+                isLiveMainnetMode
+                  ? 'bg-emerald-500/20 border-emerald-500/80 text-emerald-300 shadow-[0_0_12px_rgba(0,245,155,0.3)]'
+                  : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
+              }`}
+              title="Switch between Live DexScreener Market Feeds and Simulation"
+            >
+              <Radio className={`w-3.5 h-3.5 ${isLiveMainnetMode ? 'text-emerald-400 animate-pulse' : 'text-amber-400'}`} />
+              <span className="hidden xl:inline">MODE:</span>
+              <span>{isLiveMainnetMode ? 'LIVE MAINNET' : 'SIMULATION'}</span>
+            </button>
+
+            {/* Quick Capital Preset */}
+            <div className="hidden xl:flex items-center bg-cyber-card border border-cyber-border rounded-xl p-0.5 text-xs">
+              <span className="px-2 text-cyber-textMuted font-mono flex items-center gap-1">
+                <Flame className="w-3 h-3 text-amber-400" /> Capital:
+              </span>
+              {[500, 1000, 5000, 10000].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => onChangeTradeSize(size)}
+                  className={`px-2 py-1 rounded-lg font-mono font-bold transition-all ${
+                    tradeSizeUsd === size
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  ${size >= 1000 ? `${size / 1000}k` : size}
+                </button>
+              ))}
+            </div>
+
+            {/* Flash Loan Toggle */}
+            <button
+              onClick={onToggleFlashLoans}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                useFlashLoans
+                  ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_12px_rgba(139,92,246,0.25)]'
+                  : 'bg-cyber-card border-cyber-border text-cyber-textMuted hover:text-slate-200'
+              }`}
+              title="Flash Loans: Trade with $0 upfront capital using Aave / Balancer pools"
+            >
+              <Layers className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden lg:inline">Flash:</span>
+              <span className={useFlashLoans ? 'text-purple-300 font-bold' : 'text-slate-500'}>
+                {useFlashLoans ? 'ON' : 'OFF'}
+              </span>
+            </button>
+
+            {/* Gas Tracker Button */}
+            <button
+              onClick={onOpenGasModal}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyan-500/40 text-xs font-medium text-slate-300 hover:text-cyan-300 transition-all"
+              title="Open Live Gas Tracker"
+            >
+              <Fuel className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span className="font-mono text-cyan-400 font-bold">${avgGasUsd}</span>
+            </button>
+
+            {/* Sound Alerts Toggle */}
+            <button
+              onClick={onToggleSound}
+              className={`p-2 rounded-xl border transition-all ${
+                soundAlertsEnabled
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-cyber-card border-cyber-border text-slate-500 hover:text-slate-300'
+              }`}
+              title={soundAlertsEnabled ? 'Sound Alerts: Enabled (>1.5% spread)' : 'Sound Alerts: Muted'}
+            >
+              {soundAlertsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+
+            {/* Scanner Pause / Resume */}
+            <button
+              onClick={onToggleScanning}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-semibold text-xs transition-all ${
+                isScanning
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
+                  : 'bg-amber-500/15 border-amber-500/40 text-amber-400 hover:bg-amber-500/25'
+              }`}
+            >
+              {isScanning ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span className="hidden lg:inline">SCANNING</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5" />
+                  <span>RESUME</span>
+                </>
+              )}
+            </button>
+
+            {/* Simulator Button */}
+            <button
+              onClick={onOpenSimulatorModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Simulator</span>
+            </button>
+
+          </div>
+
+          {/* Mobile Quick Controls */}
+          <div className="flex md:hidden items-center gap-1.5">
+            {/* Live mode toggle button on mobile */}
+            <button
+              onClick={onToggleLiveMainnet}
+              className={`px-2 py-1 rounded-lg border text-[10px] font-mono font-bold flex items-center gap-1 ${
+                isLiveMainnetMode
+                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                  : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
+              }`}
+            >
+              <Radio className="w-2.5 h-2.5" />
+              <span>{isLiveMainnetMode ? 'LIVE' : 'SIM'}</span>
+            </button>
+
+            {/* Simulator quick button */}
+            <button
+              onClick={onOpenSimulatorModal}
+              className="p-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400"
+              title="Simulator"
+            >
+              <Sliders className="w-4 h-4" />
+            </button>
+
+            {/* Hamburger button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1.5 rounded-lg bg-cyber-card border border-cyber-border text-slate-300"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+
         </div>
 
-        {/* Action Controls & Capital Quick Selector */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          
-          {/* Quick Trade Size Selector */}
-          <div className="hidden lg:flex items-center bg-cyber-card border border-cyber-border rounded-xl p-1 text-xs">
-            <span className="px-2 text-cyber-textMuted font-mono flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 text-amber-400" /> Capital:
-            </span>
-            {[500, 1000, 5000, 10000].map((size) => (
+        {/* Mobile Dropdown Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-3 border-t border-cyber-border/80 space-y-2.5 text-xs font-mono">
+            {/* Capital buttons */}
+            <div>
+              <span className="text-[11px] text-cyber-textMuted mb-1 block">Working Capital:</span>
+              <div className="grid grid-cols-4 gap-1.5">
+                {[500, 1000, 5000, 10000].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => { onChangeTradeSize(size); setMobileMenuOpen(false); }}
+                    className={`py-1.5 rounded-lg text-center font-bold border ${
+                      tradeSizeUsd === size
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500'
+                        : 'bg-cyber-dark border-cyber-border text-slate-400'
+                    }`}
+                  >
+                    ${size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions Row */}
+            <div className="grid grid-cols-3 gap-1.5 pt-1">
               <button
-                key={size}
-                onClick={() => onChangeTradeSize(size)}
-                className={`px-2.5 py-1 rounded-lg font-mono font-bold transition-all ${
-                  tradeSizeUsd === size
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                onClick={() => { onToggleFlashLoans(); setMobileMenuOpen(false); }}
+                className={`py-2 rounded-xl border flex items-center justify-center gap-1 font-bold ${
+                  useFlashLoans
+                    ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                    : 'bg-cyber-dark border-cyber-border text-slate-400'
                 }`}
               >
-                ${size.toLocaleString()}
+                <Layers className="w-3.5 h-3.5" />
+                <span>Flash: {useFlashLoans ? 'ON' : 'OFF'}</span>
               </button>
-            ))}
+
+              <button
+                onClick={() => { onOpenGasModal(); setMobileMenuOpen(false); }}
+                className="py-2 rounded-xl bg-cyber-dark border border-cyber-border text-cyan-300 flex items-center justify-center gap-1 font-bold"
+              >
+                <Fuel className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Gas ${avgGasUsd}</span>
+              </button>
+
+              <button
+                onClick={() => { onToggleSound(); }}
+                className={`py-2 rounded-xl border flex items-center justify-center gap-1 font-bold ${
+                  soundAlertsEnabled
+                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                    : 'bg-cyber-dark border-cyber-border text-slate-400'
+                }`}
+              >
+                {soundAlertsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                <span>{soundAlertsEnabled ? 'Sound ON' : 'Muted'}</span>
+              </button>
+            </div>
           </div>
+        )}
 
-          {/* Flash Loan Toggle */}
-          <button
-            onClick={onToggleFlashLoans}
-            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-              useFlashLoans
-                ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_15px_rgba(139,92,246,0.25)]'
-                : 'bg-cyber-card border-cyber-border text-cyber-textMuted hover:text-slate-200'
-            }`}
-            title="Flash Loans: Trade with $0 upfront capital using Aave / Balancer pools"
-          >
-            <Layers className="w-3.5 h-3.5 text-purple-400" />
-            <span>Flash Loan:</span>
-            <span className={useFlashLoans ? 'text-purple-300 font-bold' : 'text-slate-500'}>
-              {useFlashLoans ? 'ACTIVE' : 'OFF'}
-            </span>
-          </button>
-
-          {/* Gas Tracker Button */}
-          <button
-            onClick={onOpenGasModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyan-500/40 text-xs font-medium text-slate-300 hover:text-cyan-300 transition-all"
-            title="Open Live Gas Tracker"
-          >
-            <Fuel className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span className="font-mono hidden sm:inline">Gas Avg:</span>
-            <span className="font-mono text-cyan-400 font-bold">${avgGasUsd}</span>
-          </button>
-
-          {/* Sound Alerts Toggle */}
-          <button
-            onClick={onToggleSound}
-            className={`p-2 rounded-xl border transition-all ${
-              soundAlertsEnabled
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                : 'bg-cyber-card border-cyber-border text-slate-500 hover:text-slate-300'
-            }`}
-            title={soundAlertsEnabled ? 'Sound Alerts: Enabled (>1.5% spread)' : 'Sound Alerts: Muted'}
-          >
-            {soundAlertsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
-
-          {/* Scanner Pause / Resume */}
-          <button
-            onClick={onToggleScanning}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border font-semibold text-xs transition-all ${
-              isScanning
-                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
-                : 'bg-amber-500/15 border-amber-500/40 text-amber-400 hover:bg-amber-500/25'
-            }`}
-          >
-            {isScanning ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span className="hidden sm:inline">SCANNING</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5" />
-                <span>RESUME</span>
-              </>
-            )}
-          </button>
-
-          {/* Custom Trade Simulator Button */}
-          <button
-            onClick={onOpenSimulatorModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Simulator</span>
-          </button>
-
-        </div>
       </div>
     </header>
   );
